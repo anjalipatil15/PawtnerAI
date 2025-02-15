@@ -70,7 +70,7 @@ const styles = {
     padding: "20px",
     backgroundColor: "#121212",
     borderRadius: "10px",
-    border:"1px";
+    border:"1px",
     color: "#fff",
     boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
     fontFamily: "Arial, sans-serif",
