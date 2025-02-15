@@ -12,7 +12,7 @@ const Home = () => {
       height: "100vh",
       width: "100%",
       textAlign: "center",
-      backgroundColor: "#345c66", // Adjust to match your theme
+      backgroundColor: "#345c66", 
       color: "#fef4af",
       padding: "20px",
     },
