@@ -1,129 +1,110 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-const Chatbot = () => {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
+function Chatbot() {
+    const [message, setMessage] = useState("");
+    const [chat, setChat] = useState([]);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { role: "user", text: input };
-    setMessages([...messages, userMessage]);
-
-    try {
-      const response = await fetch("http://localhost:5000/chatbot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    const styles = {
+        container: {
+            maxWidth: "600px",
+            margin: "50px auto",
+            textAlign: "center",
+            backgroundColor: "#345c66", // Matches the theme
+            color: "#fef4af",
+            padding: "20px",
+            borderRadius: "10px",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
         },
-        body: JSON.stringify({ prompt: input }),
-      });
+        chatBox: {
+            height: "300px",
+            overflowY: "auto",
+            border: "2px solid #fef4af",
+            padding: "10px",
+            borderRadius: "8px",
+            backgroundColor: "#2d4f57",
+            color: "#fef4af",
+        },
+        messageInput: {
+            width: "75%",
+            padding: "10px",
+            border: "2px solid #fef4af",
+            borderRadius: "5px",
+            backgroundColor: "#2d4f57",
+            color: "#fef4af",
+            outline: "none",
+        },
+        sendButton: {
+            padding: "10px",
+            marginLeft: "10px",
+            backgroundColor: "#fef4af",
+            color: "#345c66",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            transition: "background-color 0.3s ease",
+        },
+        sendButtonHover: {
+            backgroundColor: "#ffdb70",
+        },
+        message: (sender) => ({
+            textAlign: sender === "user" ? "right" : "left",
+            margin: "5px 0",
+            padding: "8px",
+            borderRadius: "5px",
+            display: "inline-block",
+            backgroundColor: sender === "user" ? "#fef4af" : "#2d4f57",
+            color: sender === "user" ? "#345c66" : "#fef4af",
+        }),
+    };
 
-      const data = await response.json();
+    const sendMessage = async () => {
+        if (!message.trim()) return;
 
-      if (data.result) {
-        let formattedOutput = data.result
-          .replace(/(.?)/g, "<b>$1</b>") // Bold all text
-          .replace(/\n/g, "<br>"); // Line breaks
+        const userMessage = { sender: "user", text: message };
+        setChat([...chat, userMessage]);
 
-        const botMessage = { role: "bot", text: formattedOutput };
-        setMessages([...messages, userMessage, botMessage]);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
+        setMessage("");
 
-    setInput("");
-  };
+        try {
+            const response = await axios.post("http://localhost:5000/chatbot", { message });
+            const botMessage = { sender: "bot", text: response.data.reply };
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.chatBox}>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={msg.role === "user" ? styles.userMsg : styles.botMsg}
-            dangerouslySetInnerHTML={{ __html: msg.text }} // Render formatted HTML
-          />
-        ))}
-      </div>
-      <div style={styles.inputContainer}>
-        <input
-          style={styles.input}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-        />
-        <button style={styles.button} onClick={sendMessage}>
-          ➤
-        </button>
-      </div>
-    </div>
-  );
-};
+            setChat([...chat, userMessage, botMessage]);
+        } catch (error) {
+            setChat([...chat, userMessage, { sender: "bot", text: "Error: Unable to reach AI" }]);
+        }
+    };
 
-const styles = {
-  container: {
-    maxWidth: "500px",
-    margin: "auto",
-    padding: "20px",
-    backgroundColor: "#121212",
-    borderRadius: "10px",
-    border:"1px",
-    color: "#fff",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-    fontFamily: "Arial, sans-serif",
-  },
-  chatBox: {
-    height: "350px",
-    overflowY: "auto",
-    padding: "10px",
-    backgroundColor: "#1e1e1e",
-    borderRadius: "8px",
-    marginBottom: "10px",
-  },
-  inputContainer: {
-    display: "flex",
-    gap: "10px",
-  },
-  input: {
-    flex: 1,
-    padding: "12px",
-    borderRadius: "8px",
-    border: "none",
-    outline: "none",
-    backgroundColor: "#333",
-    color: "#fff",
-  },
-  button: {
-    padding: "12px 16px",
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "16px",
-  },
-  userMsg: {
-    textAlign: "right",
-    padding: "8px",
-    margin: "6px",
-    backgroundColor: "#007bff",
-    borderRadius: "10px",
-    display: "inline-block",
-    maxWidth: "75%",
-    color: "#fff",
-  },
-  botMsg: {
-    textAlign: "left",
-    padding: "8px",
-    margin: "6px",
-    backgroundColor: "#333",
-    borderRadius: "10px",
-    display: "inline-block",
-    maxWidth: "75%",
-  },
-};
+    return (
+        <div style={styles.container}>
+            <h2>Chatbot</h2>
+            <div style={styles.chatBox}>
+                {chat.map((msg, index) => (
+                    <div key={index} style={styles.message(msg.sender)}>
+                        <strong>{msg.sender === "user" ? "You: " : "Bot: "}</strong>
+                        {msg.text}
+                    </div>
+                ))}
+            </div>
+            <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type a message..."
+                style={styles.messageInput}
+            />
+            <button
+                onClick={sendMessage}
+                style={styles.sendButton}
+                onMouseOver={(e) => (e.target.style.backgroundColor = styles.sendButtonHover.backgroundColor)}
+                onMouseOut={(e) => (e.target.style.backgroundColor = styles.sendButton.backgroundColor)}
+            >
+                Send
+            </button>
+        </div>
+    );
+}
 
 export default Chatbot;

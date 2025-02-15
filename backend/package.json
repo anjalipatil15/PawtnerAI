@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "cors": "^2.8.5",
