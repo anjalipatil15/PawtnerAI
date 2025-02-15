@@ -14,6 +14,7 @@ function Home() {
 
 const styles = {
   container: {
+    margin: "auto",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",

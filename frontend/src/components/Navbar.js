@@ -37,10 +37,10 @@ function Navbar() {
           <Link to="/financial" style={styles.navLink}>Financial Advice</Link>
         </li>
         <li>
-          <Link to="/technology" style={styles.navLink}>Important News</Link>
+          <Link to="/news" style={styles.navLink}>Important News</Link>
         </li>
         <li>
-          <Link to="/legal" style={styles.navLink}>Profile</Link>
+          <Link to="/profile" style={styles.navLink}>Profile</Link>
         </li>
       </ul>
     </nav>

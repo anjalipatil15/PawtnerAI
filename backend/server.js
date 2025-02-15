@@ -1,13 +1,15 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
-require("dotenv").config();
+const chatbotRoutes = require("./chatbot"); // Import chatbot API
 
 const app = express();
+
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); // Middleware to parse JSON
+app.use("/chatbot", chatbotRoutes); // Route for chatbot API
 
-app.use("/chatbot", require("./routes/chatbot.js"));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🔥 Server running on http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000; // Default port
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
