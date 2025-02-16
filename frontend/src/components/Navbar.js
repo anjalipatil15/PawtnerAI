@@ -34,7 +34,7 @@ const styles = {
 const Navbar = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  const navItems = ["Home", "News", "Validation Bot", "Profile", "Sign Up / Log in"];
+  const navItems = ["Home", "News","Chatbot", "Validation Bot", "Profile", "Sign Up / Log in"];
 
   return (
     <nav style={styles.navbar}>

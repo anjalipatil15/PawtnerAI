@@ -6,11 +6,14 @@ const rateLimit = require("express-rate-limit");
 const app = express();
 require("dotenv").config();
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+const chatbotRoutes = require("./chatbot");
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(fileUpload());
+
+app.use("/chatbot", chatbotRoutes);
 
 // Rate limiting to prevent abuse
 const limiter = rateLimit({

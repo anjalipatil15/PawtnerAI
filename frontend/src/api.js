@@ -17,15 +17,21 @@ const fetchFromAPI = async (endpoint, data, method = "POST") => {
       throw new Error(`HTTP ${response.status}: ${errorMessage}`);
     }
 
-    const result = await response.json();
-    console.log(`✅ API Response from ${endpoint}:`, result); // Debugging Response
-    return result;
-  } catch (error) {
-    console.error(`❌ API Error (${endpoint}):`, error.message);
-    throw error;
-  }
+        const result = await response.json();
+        console.log(`✅ API Response from ${endpoint}:`, result); // Debugging Response
+        return result;
+    } catch (error) {
+        console.error(`❌ API Error (${endpoint}):`, error.message);
+        throw error;
+    }
+
+    
 };
 
 // API Functions
 export const getStrategy = (data) => fetchFromAPI("/get-strategy", data);
 export const validateIdea = (data) => fetchFromAPI("/validate-idea", data);
+
+export const sendMessageToChatbot = async (message) => {
+    return fetchFromAPI("/chatbot", { prompt: message }); // ✅ Use "prompt" instead of "message"
+};
