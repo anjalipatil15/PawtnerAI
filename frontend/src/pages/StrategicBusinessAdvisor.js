@@ -14,9 +14,9 @@ const StrategicBusinessAdvisor = () => {
     setError(null);
 
     try {
-      console.log("Submitting form data:", formData); // Log the form data
+      console.log("Submitting form data:", formData); // Log form data
       const data = await getStrategy(formData);
-      console.log("Received response data:", data); // Log the response data
+      console.log("Received response data:", data); // Log response data
       setResult(data);
     } catch (error) {
       console.error("Error in handleSubmit:", error);

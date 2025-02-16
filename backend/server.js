@@ -26,45 +26,45 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // 🚀 EXISTING FUNCTION: /get-strategy
 // ==============================
 app.post("/get-strategy", async (req, res) => {
-  const { companyStage, currentChallenges, industryContext, businessModel, keyMetrics } = req.body;
-
-  console.log("Received request with data:", req.body); // Log the request data
-
-  if (!companyStage || !currentChallenges || !industryContext) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const prompt = `Provide strategic advice for a company at the ${companyStage} stage in the ${industryContext} industry. The company is facing the following challenges: ${currentChallenges}. Business model: ${businessModel}. Key metrics: ${keyMetrics}.`;
-
-    console.log("Generated prompt:", prompt); // Log the generated prompt
-
-    const result = await model.generateContent(prompt);
-    const response = result.response.text();
-
-    console.log("Generated response:", response); // Log the generated response
-
-    res.json({
-      strategic_analysis: response,
-      priority_score: 75, // Example priority score
-      growth_opportunities: {
-        marketExpansion: "Expand into new markets.",
-        revenueStreams: "Diversify revenue streams.",
-        operationalEfficiency: "Improve operational efficiency.",
-      },
-      action_plan: {
-        immediate: ["Action 1", "Action 2"],
-        mediumTerm: ["Action 3", "Action 4"],
-      },
-      critical_success_factors: ["Factor 1", "Factor 2"],
-      priority_explanation: "This is a high priority due to...",
-    });
-  } catch (error) {
-    console.error("Error in /get-strategy:", error); // Log the error
-    res.status(500).json({ error: "Failed to generate strategy" });
-  }
-});
+    const { companyStage, currentChallenges, industryContext, businessModel, keyMetrics } = req.body;
+  
+    console.log("Received request with data:", req.body); // Log request data
+  
+    if (!companyStage || !currentChallenges || !industryContext) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+  
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const prompt = `Provide strategic advice for a company at the ${companyStage} stage in the ${industryContext} industry. The company is facing the following challenges: ${currentChallenges}. Business model: ${businessModel}. Key metrics: ${keyMetrics}.`;
+  
+      console.log("Generated prompt:", prompt); // Log generated prompt
+  
+      const result = await model.generateContent(prompt);
+      const response = result.response.text();
+  
+      console.log("Generated response:", response); // Log generated response
+  
+      res.json({
+        strategic_analysis: response,
+        priority_score: 75, // Example priority score
+        growth_opportunities: {
+          marketExpansion: "Expand into new markets.",
+          revenueStreams: "Diversify revenue streams.",
+          operationalEfficiency: "Improve operational efficiency.",
+        },
+        action_plan: {
+          immediate: ["Action 1", "Action 2"],
+          mediumTerm: ["Action 3", "Action 4"],
+        },
+        critical_success_factors: ["Factor 1", "Factor 2"],
+        priority_explanation: "This is a high priority due to...",
+      });
+    } catch (error) {
+      console.error("Error in /get-strategy:", error); // Log error
+      res.status(500).json({ error: "Failed to generate strategy" });
+    }
+  });
 
 // ==============================
 // ✨ NEW FUNCTION: /validate-idea

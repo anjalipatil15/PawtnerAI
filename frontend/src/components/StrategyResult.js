@@ -2,51 +2,40 @@ import React, { useState, useEffect } from "react";
 
 const StrategyResult = ({ data }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [parsedAnalysis, setParsedAnalysis] = useState([]);
 
   useEffect(() => {
     if (data) {
       setIsVisible(true);
+      parseStrategicAnalysis(data.strategic_analysis);
     }
   }, [data]);
 
-  // Function to format the strategic analysis text
-  const formatStrategicAnalysis = (text) => {
-    if (!text) return null;
+  const parseStrategicAnalysis = (text) => {
+    if (!text) return;
 
-    // Split the text into sections based on double newlines
-    const sections = text.split("\n\n");
+    // Split the text into sections based on headings (e.g., **Heading**)
+    const sections = text.split(/\*\*(.*?)\*\*/g).filter(Boolean);
 
-    return sections.map((section, index) => {
-      // Check if the section is a heading (starts with **)
-      if (section.startsWith("**") && section.endsWith("**")) {
-        return (
-          <h4 key={index} style={styles.subHeading}>
-            {section.replace(/\*\*/g, "")}
-          </h4>
-        );
-      }
+    // Helper function to split section content into bullet points
+    const splitIntoBullets = (content) => {
+      if (!content) return [];
+      return content
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item && !item.includes("**"))
+        .map((item) => item.replace(/^[•*.-]\s*/, ""));
+    };
 
-      // Check if the section contains bullet points
-      if (section.includes("* ")) {
-        const bulletPoints = section.split("\n").filter((line) => line.trim() !== "");
-        return (
-          <ul key={index} style={styles.list}>
-            {bulletPoints.map((point, idx) => (
-              <li key={idx} style={styles.listItem}>
-                {point.replace("* ", "")}
-              </li>
-            ))}
-          </ul>
-        );
-      }
+    // Parse strategic analysis
+    const parsedSections = sections
+      .filter((section, index) => index % 2 === 1) // Get headings
+      .map((heading, index) => ({
+        heading,
+        content: splitIntoBullets(sections[index * 2 + 2]),
+      }));
 
-      // Default to paragraph formatting
-      return (
-        <p key={index} style={styles.paragraph}>
-          {section}
-        </p>
-      );
-    });
+    setParsedAnalysis(parsedSections);
   };
 
   if (!data || !data.strategic_analysis) return null;
@@ -59,17 +48,32 @@ const StrategyResult = ({ data }) => {
         transform: isVisible ? "translateY(0)" : "translateY(20px)",
       }}
     >
-      <div style={styles.header}>
-        <span style={styles.headerEmoji}>📊</span>
-        <h2 style={styles.title}>Strategic Business Advice</h2>
-      </div>
+      <div style={styles.resultCard}>
+        <div style={styles.cardHeader}>
+          <span style={styles.headerEmoji}>📊</span>
+          <h3 style={styles.headerTitle}>Strategic Business Advice</h3>
+        </div>
 
-      {/* Strategic Analysis */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>
-          <span style={styles.emoji}>📋</span> Strategic Analysis
-        </h3>
-        <div style={styles.content}>{formatStrategicAnalysis(data.strategic_analysis)}</div>
+        <div style={styles.analysisContent}>
+          {/* Strategic Analysis */}
+          <div style={styles.section}>
+            <h4 style={styles.sectionTitle}>
+              <span style={styles.icon}>📋</span> Strategic Analysis
+            </h4>
+            {parsedAnalysis.map((section, index) => (
+              <div key={index} style={styles.subSection}>
+                <h5 style={styles.subHeading}>{section.heading}</h5>
+                <ul style={styles.bulletList}>
+                  {section.content.map((item, idx) => (
+                    <li key={idx} style={styles.bulletItem}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -77,84 +81,89 @@ const StrategyResult = ({ data }) => {
 
 const styles = {
   container: {
+    transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+    marginTop: "1.5rem",
+  },
+  resultCard: {
     backgroundColor: "#345c66",
     borderRadius: "1rem",
-    padding: "2rem",
-    marginTop: "1.5rem",
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
     border: "1px solid rgba(254, 244, 175, 0.2)",
-    color: "#fef4af",
-    transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-    fontFamily: "'Montserrat', sans-serif",
+    overflow: "hidden",
   },
-  header: {
+  cardHeader: {
+    backgroundColor: "rgba(43, 74, 83, 0.9)",
+    padding: "1.5rem",
     display: "flex",
     alignItems: "center",
-    gap: "1rem",
-    marginBottom: "2rem",
+    gap: "0.75rem",
+    borderBottom: "1px solid rgba(254, 244, 175, 0.2)",
   },
   headerEmoji: {
-    fontSize: "2.5rem",
+    fontSize: "2rem",
     animation: "float 3s infinite",
   },
-  title: {
-    fontSize: "2rem",
+  headerTitle: {
+    fontSize: "1.75rem",
     fontWeight: "bold",
-    margin: 0,
     color: "#fef4af",
+    fontFamily: "'Montserrat', sans-serif",
+    margin: 0,
+  },
+  analysisContent: {
+    padding: "1.5rem",
   },
   section: {
     backgroundColor: "rgba(43, 74, 83, 0.8)",
     borderRadius: "0.75rem",
-    padding: "1.5rem",
-    marginBottom: "1.5rem",
-    border: "1px solid rgba(254, 244, 175, 0.1)",
-  },
-  sectionTitle: {
-    fontSize: "1.25rem",
-    fontWeight: "600",
-    marginBottom: "1rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  emoji: {
-    fontSize: "1.5rem",
-  },
-  content: {
-    backgroundColor: "rgba(43, 74, 83, 0.9)",
     padding: "1.25rem",
-    borderRadius: "0.5rem",
-    border: "1px solid rgba(254, 244, 175, 0.05)",
-  },
-  subHeading: {
-    fontSize: "1.125rem",
-    fontWeight: "600",
-    margin: "1.5rem 0 0.75rem 0",
-    color: "#fef4af",
-  },
-  paragraph: {
-    marginBottom: "1rem",
-    lineHeight: "1.6",
-    fontSize: "1rem",
+    marginBottom: "1.25rem",
+    border: "1px solid rgba(254, 244, 175, 0.1)",
     "&:last-child": {
       marginBottom: 0,
     },
   },
-  list: {
-    listStyle: "none",
-    padding: 0,
+  sectionTitle: {
+    fontSize: "1.25rem",
+    fontWeight: "600",
+    color: "#fef4af",
+    fontFamily: "'Montserrat', sans-serif",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
     margin: "0 0 1rem 0",
   },
-  listItem: {
-    marginBottom: "0.75rem",
-    paddingLeft: "1.5rem",
-    position: "relative",
+  icon: {
+    fontSize: "1.5rem",
+  },
+  subSection: {
+    marginBottom: "1rem",
+    "&:last-child": {
+      marginBottom: 0,
+    },
+  },
+  subHeading: {
+    fontSize: "1.125rem",
+    fontWeight: "600",
+    color: "#fef4af",
+    margin: "0 0 0.5rem 0",
+  },
+  bulletList: {
+    margin: "0",
+    padding: "0 0 0 1.25rem",
+    listStyle: "none",
+  },
+  bulletItem: {
+    color: "#fef4af",
+    fontSize: "1rem",
     lineHeight: "1.6",
+    marginBottom: "0.75rem",
+    position: "relative",
+    paddingLeft: "1rem",
     "&:before": {
       content: '"•"',
       position: "absolute",
-      left: 0,
+      left: "-1rem",
       color: "#fef4af",
     },
     "&:last-child": {
