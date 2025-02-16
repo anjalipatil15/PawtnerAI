@@ -4,7 +4,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 require("dotenv").config();
 
-// Initialize Google Gemini AI
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post("/", async (req, res) => {
@@ -15,13 +15,13 @@ router.post("/", async (req, res) => {
     }
 
     try {
-        // Generate AI response
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // ✅ Using Google Gemini AI
+       
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); 
         const result = await model.generateContent(prompt);
         const response = result.response.text();
 
         
-        // ✅ Convert new lines to HTML <br> for frontend display
+       
         const formattedResponse = response.replace(/\n/g, "<br>");
 
 
@@ -32,4 +32,4 @@ router.post("/", async (req, res) => {
     }
 });
 
-module.exports = router; // ✅ Export router for use in `server.js`
+module.exports = router; 
