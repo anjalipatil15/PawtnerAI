@@ -20,7 +20,7 @@ const Home = () => {
       fontSize: "10.5rem",
       fontWeight: "bold",
       color: "#fef4af",
-      lineHeight: "1",
+      lineHeigh: "1",
       width: "100%",
       textAlign: "center",
       fontFamily: "'Montserrat', sans-serif",
@@ -52,8 +52,8 @@ const Home = () => {
     <div style={styles.container}>
       <h1 style={styles.logo}>Pawtner AI</h1>
       <p style={styles.tagline}>
-        Your AI-powered startup assistant for business insights, financial
-        guidance, and pitch deck creation.
+        Your Purrfect AI-powered startup assistant for business insights, financial
+        guidance, and chatbot.
       </p>
       <div style={styles.getStartedContainer}>
         <a
