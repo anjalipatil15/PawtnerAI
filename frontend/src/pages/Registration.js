@@ -1,127 +1,286 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-const Registration = () => {
+const RegistrationForm = () => {
+  // State for form fields
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // State for validation errors
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
+  // Validate email format
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  // Validate password strength
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
+
+    // Reset errors
+    setErrors({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+
+    // Validate name
+    if (!formData.name.trim()) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        name: "Name is required",
+      }));
+    }
+
+    // Validate email
+    if (!formData.email.trim()) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        email: "Email is required",
+      }));
+    } else if (!validateEmail(formData.email)) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        email: "Invalid email format",
+      }));
+    }
+
+    // Validate password
+    if (!formData.password.trim()) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        password: "Password is required",
+      }));
+    } else if (!validatePassword(formData.password)) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        password:
+          "Password must be at least 8 characters long and include at least one letter, one number, and one special character",
+      }));
+    }
+
+    // Validate confirm password
+    if (!formData.confirmPassword.trim()) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        confirmPassword: "Confirm Password is required",
+      }));
+    } else if (formData.password !== formData.confirmPassword) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        confirmPassword: "Passwords do not match",
+      }));
+    }
+
+    // If no errors, submit the form
+    if (
+      !errors.name &&
+      !errors.email &&
+      !errors.password &&
+      !errors.confirmPassword
+    ) {
+      console.log("Form submitted successfully:", formData);
+      // You can add your form submission logic here
+    }
   };
 
   return (
-    <div className="registration-container">
-      <form className="registration-form" onSubmit={handleSubmit}>
-        <h2 className="form-title">Create an Account</h2>
-        <input 
-          type="text" 
-          name="name" 
-          placeholder="Full Name" 
-          value={formData.name} 
-          onChange={handleChange} 
-          required 
-        />
-        <input 
-          type="email" 
-          name="email" 
-          placeholder="Email Address" 
-          value={formData.email} 
-          onChange={handleChange} 
-          required 
-        />
-        <input 
-          type="password" 
-          name="password" 
-          placeholder="Password" 
-          value={formData.password} 
-          onChange={handleChange} 
-          required 
-        />
-        <input 
-          type="password" 
-          name="confirmPassword" 
-          placeholder="Confirm Password" 
-          value={formData.confirmPassword} 
-          onChange={handleChange} 
-          required 
-        />
-        <button type="submit" className="submit-button">Register</button>
-      </form>
+    <div style={styles.container}>
+      <div style={styles.formCard}>
+        <h2 style={styles.title}>Registration Form</h2>
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {/* Name */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Name<span style={styles.required}>*</span>
+            </label>
+            <div style={styles.inputWrapper}>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                style={styles.input}
+              />
+            </div>
+            {errors.name && <div style={styles.error}>{errors.name}</div>}
+          </div>
+
+          {/* Email */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Email<span style={styles.required}>*</span>
+            </label>
+            <div style={styles.inputWrapper}>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                style={styles.input}
+              />
+            </div>
+            {errors.email && <div style={styles.error}>{errors.email}</div>}
+          </div>
+
+          {/* Password */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Password<span style={styles.required}>*</span>
+            </label>
+            <div style={styles.inputWrapper}>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                style={styles.input}
+              />
+            </div>
+            {errors.password && (
+              <div style={styles.error}>{errors.password}</div>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Confirm Password<span style={styles.required}>*</span>
+            </label>
+            <div style={styles.inputWrapper}>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                style={styles.input}
+              />
+            </div>
+            {errors.confirmPassword && (
+              <div style={styles.error}>{errors.confirmPassword}</div>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div style={styles.inputGroup}>
+            <button type="submit" style={styles.submitButton}>
+              Register
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
-}
+};
 
-// Internal CSS
-const styles = `
-  .registration-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #345c66;
-  }
+// Reuse the same styles from ProfilePage
+const styles = {
+  container: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+    backgroundColor: "#345c66",
+    padding: "2rem",
+  },
+  formCard: {
+    width: "100%",
+    maxWidth: "800px",
+    backgroundColor: "#2E4F4F",
+    padding: "2.5rem",
+    borderRadius: "1rem",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+    border: "1px solid rgba(254, 244, 175, 0.2)",
+  },
+  title: {
+    fontSize: "2.5rem",
+    fontWeight: "bold",
+    color: "#fef4af",
+    textAlign: "center",
+    marginBottom: "2.5rem",
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2rem",
+  },
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+  },
+  label: {
+    fontSize: "1rem",
+    fontWeight: "600",
+    color: "#fef4af",
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  required: {
+    color: "#ff6b6b",
+    marginLeft: "0.25rem",
+  },
+  inputWrapper: {
+    position: "relative",
+    backgroundColor: "rgba(254, 244, 175, 0.1)",
+    borderRadius: "0.75rem",
+    padding: "0.75rem",
+    border: "1px solid rgba(254, 244, 175, 0.2)",
+  },
+  input: {
+    width: "100%",
+    color: "#fef4af",
+    fontSize: "1rem",
+    fontFamily: "'Montserrat', sans-serif",
+    backgroundColor: "transparent",
+    border: "none",
+    outline: "none",
+  },
+  error: {
+    fontSize: "0.875rem",
+    color: "#ff6b6b",
+    marginTop: "0.25rem",
+  },
+  submitButton: {
+    width: "100%",
+    padding: "0.75rem",
+    backgroundColor: "#fef4af",
+    color: "#2E4F4F",
+    fontSize: "1rem",
+    fontWeight: "600",
+    fontFamily: "'Montserrat', sans-serif",
+    border: "none",
+    borderRadius: "0.75rem",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+  },
+};
 
-  .registration-form {
-    background-color: #4a7b85;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s, box-shadow 0.3s;
-    color: #fef4af;
-    width: 300px;
-    font-family: Montserrat, sans-serif;
-  }
-
-  .registration-form:hover {
-    transform: translateY(-5px);
-    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.5);
-  }
-
-  .form-title {
-    text-align: center;
-    color: #fef4af;
-    margin-bottom: 15px;
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-
-  .submit-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #fef4af;
-    border: none;
-    border-radius: 4px;
-    color: #345c66;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .submit-button:hover {
-    background-color: #f3e5ab;
-  }
-`;
-
-const styleSheet = document.createElement("style");
-styleSheet.type = "text/css";
-styleSheet.innerText = styles;
-document.head.appendChild(styleSheet);
-
-export default Registration;
+export default RegistrationForm;

@@ -6,6 +6,9 @@ import News from "./pages/News";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Registration from "./pages/Registration";
+import StrategicBusinessAdvisor from "./pages/StrategicBusinessAdvisor";
+import IdeaValidation from "./pages/IdeaValidation";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
         <Route path="/news" element={<News/>} />
         <Route path="/" element={<Home />} />
         <Route path="/sign-up-/-log-in" element={<Registration />} />
+        <Route path="/strategic-business-advisor" element={<StrategicBusinessAdvisor />} />
+        <Route path="/validation-bot" element={<IdeaValidation />} />
+        <Route path="/profile" element={<ProfilePage />} />
         </Routes>
         
       <Footer />

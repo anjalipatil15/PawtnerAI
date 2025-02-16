@@ -57,7 +57,7 @@ const Home = () => {
       </p>
       <div style={styles.getStartedContainer}>
         <a
-          href="/chatbot"
+          href="/strategic-business-advisor"
           style={styles.getStartedButton}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
