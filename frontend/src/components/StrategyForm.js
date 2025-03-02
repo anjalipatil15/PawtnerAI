@@ -240,7 +240,7 @@ const styles = {
   select: {
     width: "100%",
     padding: "0.75rem",
-    backgroundColor: "transparent",
+    backgroundColor: "#345c66",
     color: "#fef4af",
     border: "none",
     outline: "none",

@@ -30,7 +30,15 @@ const fetchFromAPI = async (endpoint, data, method = "POST") => {
 
 // API Functions
 export const getStrategy = (data) => fetchFromAPI("/get-strategy", data);
-export const validateIdea = (data) => fetchFromAPI("/validate-idea", data);
+export const validateIdea = async (data) => {
+    try {
+      const response = await fetchFromAPI("/validate-idea", data);
+      return response;
+    } catch (error) {
+      console.error("Error validating idea:", error);
+      throw error;
+    }
+  };
 
 export const sendMessageToChatbot = async (message) => {
     return fetchFromAPI("/chatbot", { prompt: message }); // ✅ Use "prompt" instead of "message"

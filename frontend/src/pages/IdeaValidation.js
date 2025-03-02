@@ -4,12 +4,12 @@ import AnalysisResult from "../components/AnalysisResult";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 const IdeaValidation = () => {
-  const [analysis, setAnalysis] = useState("");
+  const [analysis, setAnalysis] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const validateIdea = async (ideaData) => {
     setIsLoading(true);
-    setAnalysis("");
+    setAnalysis(null);
 
     try {
       const response = await fetch("http://localhost:5000/validate-idea", {
@@ -19,10 +19,10 @@ const IdeaValidation = () => {
       });
 
       const data = await response.json();
-      setAnalysis(data.analysis || "No analysis available.");
+      setAnalysis(data.analysis || null);
     } catch (error) {
       console.error("Error:", error);
-      setAnalysis("Error analyzing idea. Please try again.");
+      setAnalysis({ error: "Error analyzing idea. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -32,7 +32,8 @@ const IdeaValidation = () => {
     <div className="container mx-auto p-6 max-w-4xl">
       <IdeaForm onSubmit={validateIdea} />
       <LoadingOverlay isLoading={isLoading} />
-      <AnalysisResult analysis={analysis} />
+      {analysis && !analysis.error && <AnalysisResult analysis={analysis} />}
+      {analysis?.error && <p className="text-red-500">{analysis.error}</p>}
     </div>
   );
 };

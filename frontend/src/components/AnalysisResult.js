@@ -2,54 +2,31 @@ import React, { useEffect, useState } from "react";
 
 const AnalysisResult = ({ analysis }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [parsedData, setParsedData] = useState({
-    idea: '',
-    market: '',
-    customers: '',
-    validation: [],
-    risks: [],
-    recommendations: [],
-    conclusion: ''
-  });
+  const [parsedAnalysis, setParsedAnalysis] = useState(null);
 
   useEffect(() => {
-    if (analysis) {
+    if (analysis && typeof analysis === "object") {
       setIsVisible(true);
-      parseAnalysis(analysis);
+      setParsedAnalysis(parseAnalysis(analysis));
     }
   }, [analysis]);
 
-  const parseAnalysis = (text) => {
-    // Parse initial idea details
-    const ideaMatch = text.match(/IDEA:\s*([^\n]+)/i);
-    const marketMatch = text.match(/TARGET MARKET:\s*([^\n]+)/i);
-    const customersMatch = text.match(/TARGET CUSTOMERS:\s*([^\n]+)/i);
-
-    // Parse sections using regex
-    const validationSection = text.match(/\*\*Validation\*\*([\s\S]*?)(?=\*\*Risks\*\*|$)/i);
-    const risksSection = text.match(/\*\*Risks\*\*([\s\S]*?)(?=\*\*Recommendations\*\*|$)/i);
-    const recommendationsSection = text.match(/\*\*Recommendations\*\*([\s\S]*?)(?=\*\*Overall\*\*|$)/i);
-    const conclusionMatch = text.match(/\*\*Overall\*\*([\s\S]*?)$/i);
-
-    // Helper function to split section content into bullet points
-    const splitIntoBullets = (content) => {
-      if (!content) return [];
-      return content
-        .split('\n')
-        .map(item => item.trim())
-        .filter(item => item && !item.includes('**'))
-        .map(item => item.replace(/^[•*.-]\s*/, ''));
+  // Parse the analysis response
+  const parseAnalysis = (data) => {
+    if (!data || typeof data !== "object") return null;
+  
+    // Extract and sanitize data
+    const extractList = (field) =>
+      data[field]
+        ? data[field].map((line) => line.trim()).filter((line) => line !== "")
+        : [];
+  
+    return {
+      validation: extractList("validation"),
+      risks: extractList("risks"),
+      recommendations: extractList("recommendations"),
+      conclusion: data.conclusion ? String(data.conclusion).trim() : null,
     };
-
-    setParsedData({
-      idea: ideaMatch?.[1]?.trim() || '',
-      market: marketMatch?.[1]?.trim() || '',
-      customers: customersMatch?.[1]?.trim() || '',
-      validation: splitIntoBullets(validationSection?.[1]),
-      risks: splitIntoBullets(risksSection?.[1]),
-      recommendations: splitIntoBullets(recommendationsSection?.[1]),
-      conclusion: conclusionMatch?.[1]?.trim() || ''
-    });
   };
 
   const renderSection = (title, items, emoji) => {
@@ -73,13 +50,13 @@ const AnalysisResult = ({ analysis }) => {
     );
   };
 
-  if (!analysis) return null;
+  if (!parsedAnalysis) return null;
 
   return (
     <div style={{
       ...styles.container,
       opacity: isVisible ? 1 : 0,
-      transform: isVisible ? 'translateY(0)' : 'translateY(20px)'
+      transform: isVisible ? "translateY(0)" : "translateY(20px)"
     }}>
       <div style={styles.resultCard}>
         <div style={styles.cardHeader}>
@@ -94,32 +71,32 @@ const AnalysisResult = ({ analysis }) => {
               <span style={styles.icon}>💡</span> Startup Idea Summary
             </h4>
             <div style={styles.detailsGrid}>
-              {parsedData.idea && (
+              {parsedAnalysis.idea && (
                 <div style={styles.detailItem}>
                   <span style={styles.detailLabel}>IDEA:</span>
-                  <span style={styles.detailValue}>{parsedData.idea}</span>
+                  <span style={styles.detailValue}>{parsedAnalysis.idea}</span>
                 </div>
               )}
-              {parsedData.market && (
+              {parsedAnalysis.market && (
                 <div style={styles.detailItem}>
                   <span style={styles.detailLabel}>TARGET MARKET:</span>
-                  <span style={styles.detailValue}>{parsedData.market}</span>
+                  <span style={styles.detailValue}>{parsedAnalysis.market}</span>
                 </div>
               )}
-              {parsedData.customers && (
+              {parsedAnalysis.customers && (
                 <div style={styles.detailItem}>
                   <span style={styles.detailLabel}>TARGET CUSTOMERS:</span>
-                  <span style={styles.detailValue}>{parsedData.customers}</span>
+                  <span style={styles.detailValue}>{parsedAnalysis.customers}</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Dynamic Sections */}
-          {renderSection('Market Validation', parsedData.validation, '📊')}
-          {renderSection('Risk Assessment', parsedData.risks, '⚠️')}
-          {renderSection('Strategic Recommendations', parsedData.recommendations, '🎯')}
-          {parsedData.conclusion && renderSection('Conclusion', parsedData.conclusion, '📝')}
+          {renderSection("Market Validation", parsedAnalysis.validation, "📊")}
+          {renderSection("Risk Assessment", parsedAnalysis.risks, "⚠️")}
+          {renderSection("Strategic Recommendations", parsedAnalysis.recommendations, "🎯")}
+          {parsedAnalysis.conclusion && renderSection("Conclusion", parsedAnalysis.conclusion, "📝")}
         </div>
       </div>
     </div>
@@ -148,13 +125,11 @@ const styles = {
   },
   headerEmoji: {
     fontSize: "2rem",
-    animation: "float 3s infinite",
   },
   headerTitle: {
     fontSize: "1.75rem",
     fontWeight: "bold",
     color: "#fef4af",
-    fontFamily: "'Montserrat', sans-serif",
     margin: 0,
   },
   analysisContent: {
@@ -166,15 +141,11 @@ const styles = {
     padding: "1.25rem",
     marginBottom: "1.25rem",
     border: "1px solid rgba(254, 244, 175, 0.1)",
-    "&:last-child": {
-      marginBottom: 0,
-    },
   },
   sectionTitle: {
     fontSize: "1.25rem",
     fontWeight: "600",
     color: "#fef4af",
-    fontFamily: "'Montserrat', sans-serif",
     display: "flex",
     alignItems: "center",
     gap: "0.5rem",
@@ -214,31 +185,13 @@ const styles = {
     fontSize: "1rem",
     lineHeight: "1.6",
     marginBottom: "0.75rem",
-    position: "relative",
     paddingLeft: "1rem",
-    "&:before": {
-      content: '"•"',
-      position: "absolute",
-      left: "-1rem",
-      color: "#fef4af",
-    },
-    "&:last-child": {
-      marginBottom: 0,
-    },
   },
   sectionText: {
     color: "#fef4af",
     fontSize: "1rem",
     lineHeight: "1.6",
     margin: 0,
-  },
-  "@keyframes float": {
-    "0%, 100%": {
-      transform: "translateY(0)",
-    },
-    "50%": {
-      transform: "translateY(-5px)",
-    },
   },
 };
 

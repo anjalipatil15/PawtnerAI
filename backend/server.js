@@ -29,45 +29,45 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // 🚀 EXISTING FUNCTION: /get-strategy
 // ==============================
 app.post("/get-strategy", async (req, res) => {
-    const { companyStage, currentChallenges, industryContext, businessModel, keyMetrics } = req.body;
-  
-    console.log("Received request with data:", req.body); // Log request data
-  
-    if (!companyStage || !currentChallenges || !industryContext) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-  
-    try {
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      const prompt = `Provide strategic advice for a company at the ${companyStage} stage in the ${industryContext} industry. The company is facing the following challenges: ${currentChallenges}. Business model: ${businessModel}. Key metrics: ${keyMetrics}.`;
-  
-      console.log("Generated prompt:", prompt); // Log generated prompt
-  
-      const result = await model.generateContent(prompt);
-      const response = result.response.text();
-  
-      console.log("Generated response:", response); // Log generated response
-  
-      res.json({
-        strategic_analysis: response,
-        priority_score: 75, // Example priority score
-        growth_opportunities: {
-          marketExpansion: "Expand into new markets.",
-          revenueStreams: "Diversify revenue streams.",
-          operationalEfficiency: "Improve operational efficiency.",
-        },
-        action_plan: {
-          immediate: ["Action 1", "Action 2"],
-          mediumTerm: ["Action 3", "Action 4"],
-        },
-        critical_success_factors: ["Factor 1", "Factor 2"],
-        priority_explanation: "This is a high priority due to...",
-      });
-    } catch (error) {
-      console.error("Error in /get-strategy:", error); // Log error
-      res.status(500).json({ error: "Failed to generate strategy" });
-    }
-  });
+  const { companyStage, currentChallenges, industryContext, businessModel, keyMetrics } = req.body;
+
+  console.log("Received request with data:", req.body); // Log request data
+
+  if (!companyStage || !currentChallenges || !industryContext) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const prompt = `Provide strategic advice for a company at the ${companyStage} stage in the ${industryContext} industry. The company is facing the following challenges: ${currentChallenges}. Business model: ${businessModel}. Key metrics: ${keyMetrics}.`;
+
+    console.log("Generated prompt:", prompt); // Log generated prompt
+
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+
+    console.log("Generated response:", response); // Log generated response
+
+    res.json({
+      strategic_analysis: response,
+      priority_score: 75, // Example priority score
+      growth_opportunities: {
+        marketExpansion: "Expand into new markets.",
+        revenueStreams: "Diversify revenue streams.",
+        operationalEfficiency: "Improve operational efficiency.",
+      },
+      action_plan: {
+        immediate: ["Action 1", "Action 2"],
+        mediumTerm: ["Action 3", "Action 4"],
+      },
+      critical_success_factors: ["Factor 1", "Factor 2"],
+      priority_explanation: "This is a high priority due to...",
+    });
+  } catch (error) {
+    console.error("Error in /get-strategy:", error); // Log error
+    res.status(500).json({ error: "Failed to generate strategy" });
+  }
+});
 
 // ==============================
 // ✨ NEW FUNCTION: /validate-idea
@@ -87,7 +87,21 @@ app.post("/validate-idea", async (req, res) => {
       TARGET MARKET: ${market}
       TARGET CUSTOMERS: ${targetCustomers}
       
-      Provide validation, risks, and recommendations.
+      Provide validation, risks, and recommendations in the following format:
+      ### Validation:
+      - [Validation Point 1]
+      - [Validation Point 2]
+      
+      ### Risks:
+      - [Risk 1]
+      - [Risk 2]
+      
+      ### Recommendations:
+      - [Recommendation 1]
+      - [Recommendation 2]
+      
+      ### Conclusion:
+      [Conclusion Text]
     `;
 
     console.log("Generated idea validation prompt:", prompt);
@@ -97,7 +111,25 @@ app.post("/validate-idea", async (req, res) => {
 
     console.log("Generated idea validation response:", response);
 
-    res.json({ analysis: response });
+    // Parse the response using regex
+    const validationRegex = /### Validation:\s*((?:-.*\s*)*)/;
+    const risksRegex = /### Risks:\s*((?:-.*\s*)*)/;
+    const recommendationsRegex = /### Recommendations:\s*((?:-.*\s*)*)/;
+    const conclusionRegex = /### Conclusion:\s*(.*)/;
+
+    const validation = (response.match(validationRegex)?.[1]?.trim() || "");
+    const risks = (response.match(risksRegex)?.[1]?.trim() || "");
+    const recommendations = (response.match(recommendationsRegex)?.[1]?.trim() || "");
+    const conclusion = (response.match(conclusionRegex)?.[1]?.trim() || "");
+
+    res.json({
+      analysis: {
+        validation: validation.split("\n").map((line) => line.trim()).filter((line) => line),
+        risks: risks.split("\n").map((line) => line.trim()).filter((line) => line),
+        recommendations: recommendations.split("\n").map((line) => line.trim()).filter((line) => line),
+        conclusion,
+      },
+    });
   } catch (error) {
     console.error("Error in /validate-idea:", error);
     res.status(500).json({ error: "Failed to validate idea" });
