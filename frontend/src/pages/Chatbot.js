@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { sendMessageToChatbot } from "../api";
+import DocumentUploader from "../components/DocumentUploader";
 
 function Chatbot() {
     const [message, setMessage] = useState("");
     const [chat, setChat] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
+    const [showUploader, setShowUploader] = useState(false);
     const chatBoxRef = useRef(null);
 
     const parseMessage = (text) => {
@@ -33,8 +35,8 @@ function Chatbot() {
 
     const styles = {
         container: {
-            maxWidth: "600px",
-            margin: "50px auto",
+            maxWidth: "800px",
+            margin: "30px auto",
             textAlign: "center",
             backgroundColor: "#345c66",
             color: "#fef4af",
@@ -45,8 +47,14 @@ function Chatbot() {
             flexDirection: "column",
             alignItems: "center",
         },
+        chatContainer: {
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+        },
         chatBox: {
-            height: "300px",
+            height: "400px",
             width: "100%",
             overflowY: "auto",
             border: "2px solid #fef4af",
@@ -92,6 +100,7 @@ function Chatbot() {
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
+            width: "100%",
         },
         userMessage: {
             alignSelf: "flex-end",
@@ -148,7 +157,35 @@ function Chatbot() {
             opacity: 0.7,
             padding: "4px 8px",
             fontSize: "14px",
-        }
+        },
+        sources: {
+            marginTop: "6px",
+            fontSize: "12px",
+            opacity: 0.8,
+            padding: "4px 8px",
+            backgroundColor: "rgba(0, 0, 0, 0.2)",
+            borderRadius: "4px",
+            width: "100%",
+        },
+        sourcesTitle: {
+            fontWeight: "bold",
+            marginBottom: "2px",
+        },
+        actionButtons: {
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+            marginBottom: "15px",
+        },
+        actionButton: {
+            padding: "8px 15px",
+            backgroundColor: "#2d4f57",
+            color: "#fef4af",
+            border: "1px solid #fef4af",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontSize: "14px",
+        },
     };
 
     useEffect(() => {
@@ -171,7 +208,9 @@ function Chatbot() {
             const botMessage = { 
                 sender: "bot", 
                 text: response.reply,
-                parsed: parsedResponse
+                parsed: parsedResponse,
+                sources: response.sources || [], // Include sources from RAG
+                fallback: response.fallback || false
             };
 
             setChat((prevChat) => [...prevChat, botMessage]);
@@ -200,55 +239,91 @@ function Chatbot() {
         </div>
     );
 
+    const renderSources = (sources) => {
+        if (!sources || sources.length === 0) return null;
+        
+        return (
+            <div style={styles.sources}>
+                <div style={styles.sourcesTitle}>Sources:</div>
+                <ul style={{ margin: 0, paddingLeft: "16px" }}>
+                    {sources.map((source, idx) => (
+                        <li key={idx} style={{ fontSize: "11px" }}>
+                            {source.source} (Relevance: {source.relevance})
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    };
+
+    const toggleUploader = () => {
+        setShowUploader(!showUploader);
+    };
+
     return (
         <div style={styles.container}>
-            <h2>Chatbot</h2>
-
-            <div style={styles.chatBox} ref={chatBoxRef}>
-                {chat.map((msg, index) => (
-                    <div key={index} style={styles.messageContainer}>
-                        <span style={styles.username}>
-                            {msg.sender === "user" ? "You" : "Bot"}
-                        </span>
-                        <div 
-                            style={{
-                                ...msg.sender === "user" ? styles.userMessage : styles.botMessage,
-                                ...(msg.error && {
-                                    backgroundColor: "#ff6b6b",
-                                    color: "#ffffff",
-                                })
-                            }}
-                        >
-                            {msg.parsed?.structured 
-                                ? renderStructuredMessage(msg.parsed.structured)
-                                : msg.text}
-                        </div>
-                    </div>
-                ))}
-                {isTyping && (
-                    <div style={styles.typingIndicator}>
-                        Bot is typing...
-                    </div>
-                )}
-            </div>
-
-            <div style={styles.inputContainer}>
-                <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                    placeholder="Type a message..."
-                    style={styles.messageInput}
-                />
-                <button
-                    onClick={sendMessage}
-                    style={styles.sendButton}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = styles.sendButtonHover.backgroundColor)}
-                    onMouseOut={(e) => (e.target.style.backgroundColor = styles.sendButton.backgroundColor)}
+            <h2>AI Assistant</h2>
+            
+            <div style={styles.actionButtons}>
+                <button 
+                    style={styles.actionButton}
+                    onClick={toggleUploader}
                 >
-                    Send
+                    {showUploader ? "Hide Knowledge Uploader" : "Add Knowledge to Assistant"}
                 </button>
+            </div>
+            
+            {showUploader && <DocumentUploader />}
+
+            <div style={styles.chatContainer}>
+                <div style={styles.chatBox} ref={chatBoxRef}>
+                    {chat.map((msg, index) => (
+                        <div key={index} style={styles.messageContainer}>
+                            <span style={styles.username}>
+                                {msg.sender === "user" ? "You" : "AI"}
+                                {msg.fallback && " (Standard Mode)"}
+                            </span>
+                            <div 
+                                style={{
+                                    ...msg.sender === "user" ? styles.userMessage : styles.botMessage,
+                                    ...(msg.error && {
+                                        backgroundColor: "#ff6b6b",
+                                        color: "#ffffff",
+                                    })
+                                }}
+                            >
+                                {msg.parsed?.structured 
+                                    ? renderStructuredMessage(msg.parsed.structured)
+                                    : msg.text}
+                            </div>
+                            {msg.sources && renderSources(msg.sources)}
+                        </div>
+                    ))}
+                    {isTyping && (
+                        <div style={styles.typingIndicator}>
+                            AI is thinking...
+                        </div>
+                    )}
+                </div>
+
+                <div style={styles.inputContainer}>
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Type a message..."
+                        style={styles.messageInput}
+                    />
+                    <button
+                        onClick={sendMessage}
+                        style={styles.sendButton}
+                        onMouseOver={(e) => (e.target.style.backgroundColor = styles.sendButtonHover.backgroundColor)}
+                        onMouseOut={(e) => (e.target.style.backgroundColor = styles.sendButton.backgroundColor)}
+                    >
+                        Send
+                    </button>
+                </div>
             </div>
         </div>
     );

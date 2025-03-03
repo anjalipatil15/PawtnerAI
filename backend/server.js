@@ -7,6 +7,8 @@ const app = express();
 require("dotenv").config();
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 const chatbotRoutes = require("./chatbot");
+const path = require('path');
+const fs = require('fs');
 
 // Middleware
 app.use(cors());
@@ -160,6 +162,110 @@ app.post("/upload-file", async (req, res) => {
   } catch (error) {
     console.error("Error in /upload-file:", error);
     res.status(500).json({ error: "Failed to process file upload" });
+  }
+});
+// ==============================
+// Import RAG functionality
+// ==============================
+const { initVectorStore, processDocument, processTextContent, processAllDocuments } = require("./rag");
+
+// Initialize RAG when server starts
+(async () => {
+  try {
+    await initVectorStore();
+    console.log('RAG system initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize RAG system:', error);
+  }
+})();
+
+// ==============================
+// 📚 NEW ENDPOINT: Process uploaded file for RAG
+// ==============================
+app.post("/rag/process-file", async (req, res) => {
+  try {
+    // Use the file from the /upload-file endpoint or allow direct upload
+    if (!req.files && !req.body.fileName) {
+      return res.status(400).json({ error: "No file specified" });
+    }
+
+    let filePath;
+    
+    // Handle direct file upload
+    if (req.files && req.files.file) {
+      const file = req.files.file;
+      
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(__dirname, 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      filePath = path.join(__dirname, 'uploads', file.name);
+      
+      await new Promise((resolve, reject) => {
+        file.mv(filePath, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    } 
+    // Handle previously uploaded file
+    else if (req.body.fileName) {
+      filePath = path.join(__dirname, 'uploads', req.body.fileName);
+    }
+
+    // Process the document and add to knowledge base
+    const result = await processDocument(filePath);
+    
+    res.json({
+      message: "Document processed and added to knowledge base",
+      result
+    });
+  } catch (error) {
+    console.error("Error processing document:", error);
+    res.status(500).json({ error: "Failed to process document" });
+  }
+});
+
+// ==============================
+// 📚 NEW ENDPOINT: Process text directly for RAG
+// ==============================
+app.post("/rag/process-text", async (req, res) => {
+  try {
+    const { text, source } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: "Text content is required" });
+    }
+
+    // Process the text content
+    const result = await processTextContent(text, source || "Manual Input");
+    
+    res.json({
+      message: "Text processed and added to knowledge base",
+      result
+    });
+  } catch (error) {
+    console.error("Error processing text:", error);
+    res.status(500).json({ error: "Failed to process text" });
+  }
+});
+
+// ==============================
+// 📚 NEW ENDPOINT: Process all documents in uploads folder
+// ==============================
+app.post("/rag/process-all", async (req, res) => {
+  try {
+    const results = await processAllDocuments();
+    
+    res.json({
+      message: "All documents processed",
+      results
+    });
+  } catch (error) {
+    console.error("Error processing all documents:", error);
+    res.status(500).json({ error: "Failed to process documents" });
   }
 });
 
